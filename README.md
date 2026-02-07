@@ -12,18 +12,16 @@
 
 AWS CLI Playground es una aplicación web educativa que te permite practicar comandos de AWS CLI en un entorno simulado, completamente seguro y sin necesidad de tener una cuenta de AWS.
 
-### ✨ Características
+### ✨ Características Premium (v2.0)
 
+- 🎨 **Diseño Glassmorphism de Nueva Generación**: Interfaz inmersiva con desenfoques avanzados, bordes de neón y gradientes cinéticos.
+- 🖥️ **Dashboard Horizontal Inteligente**: Layout optimizado para productividad con vista dividida (Consola | Retos).
+- ⌨️ **Terminal con Autocompletado Visual**: Predicción de comandos (ghost-text) y soporte para tecla `Tab`.
+- 🎉 **Feedback Gamificado**: Animaciones de confeti y sistema de notificaciones toast para celebrar tus logros.
+- 📘 **Manual Interactivo "¿Cómo Jugar?"**: Guía paso a paso integrada para nuevos usuarios del playground.
 - ✅ **50+ comandos AWS CLI simulados** (S3, EC2, IAM, Lambda, CloudWatch)
 - ✅ **20 challenges progresivos** (Beginner → Intermediate → Advanced)
-- ✅ **Terminal interactiva real** con xterm.js
-- ✅ **Sistema de puntos y niveles**
-- ✅ **Historial de comandos** (↑/↓)
-- ✅ **Autocompletado** inteligente
-- ✅ **Manejo de errores educativo** con sugerencias
-- ✅ **Dark mode** incluido
-- ✅ **Progreso persistente** (localStorage)
-- ✅ **100% offline** después de cargar
+- ✅ **Sistema de puntos y niveles persistente**
 
 ---
 

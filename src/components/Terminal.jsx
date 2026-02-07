@@ -3,13 +3,20 @@ import { Terminal as XTerm } from 'xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import 'xterm/css/xterm.css';
 import { commands } from '../data/commands';
+import { challenges } from '../data/challenges';
 import { useStore } from '../store/useStore';
 
-export const Terminal = () => {
+export const Terminal = ({ onCompleteAction }) => {
     const terminalRef = useRef(null);
     const xtermRef = useRef(null);
-    const { addPoints, addToHistory } = useStore();
+    const { addPoints, addToHistory, completeChallenge, completedChallenges } = useStore();
     const currentLine = useRef('');
+
+    // Lista de comandos planos para sugerencias
+    const allFlattenedCommands = Object.keys(commands).flatMap(service => {
+        if (service === 'help') return ['aws help'];
+        return Object.keys(commands[service].subcommands || {}).map(sub => `aws ${service} ${sub}`);
+    });
 
     useEffect(() => {
         const term = new XTerm({
@@ -45,14 +52,49 @@ export const Terminal = () => {
                 term.write('\x1b[1;32m➜\x1b[0m \x1b[1;34m~\x1b[0m ');
             } else if (data === '\u007F') { // Backspace
                 if (currentLine.current.length > 0) {
+                    clearSuggestion();
                     currentLine.current = currentLine.current.slice(0, -1);
                     term.write('\b \b');
+                    showSuggestion();
+                }
+            } else if (data === '\t') { // Tab for autocomplete
+                const suggestion = getSuggestion(currentLine.current);
+                if (suggestion) {
+                    const remaining = suggestion.slice(currentLine.current.length);
+                    currentLine.current += remaining;
+                    term.write(remaining);
                 }
             } else {
+                clearSuggestion();
                 currentLine.current += data;
                 term.write(data);
+                showSuggestion();
             }
         });
+
+        const showSuggestion = () => {
+            const suggestion = getSuggestion(currentLine.current);
+            if (suggestion && suggestion !== currentLine.current) {
+                const remaining = suggestion.slice(currentLine.current.length);
+                term.write(`\x1b[90m${remaining}\x1b[0m`);
+                // Move cursor back
+                for (let i = 0; i < remaining.length; i++) term.write('\b');
+            }
+        };
+
+        const clearSuggestion = () => {
+            const suggestion = getSuggestion(currentLine.current);
+            if (suggestion && suggestion !== currentLine.current) {
+                const remaining = suggestion.slice(currentLine.current.length);
+                for (let i = 0; i < remaining.length; i++) term.write(' ');
+                for (let i = 0; i < remaining.length; i++) term.write('\b');
+            }
+        };
+
+        const getSuggestion = (input) => {
+            if (!input || input.length < 2) return null;
+            return allFlattenedCommands.find(c => c.startsWith(input));
+        };
 
         const handleResize = () => fitAddon.fit();
         window.addEventListener('resize', handleResize);
@@ -92,14 +134,25 @@ export const Terminal = () => {
             return;
         }
 
+        // Ejecutar comando
         const result = cmdSub.execute(args, {});
         xtermRef.current.writeln(result.output);
-        if (result.reward) addPoints(result.reward);
+
+        // Notificar acción
+        if (result.success && onCompleteAction) onCompleteAction();
+
+        // Validar Retos
+        challenges.forEach(ch => {
+            if (!completedChallenges.includes(ch.id) && input === ch.solution) {
+                completeChallenge(ch.id);
+                addPoints(ch.reward);
+            }
+        });
     };
 
     return (
         <div className="flex-1 glass-morphism rounded-3xl p-6 shadow-2xl border border-white/5 relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-100 transition-opacity duration-500 pointer-events-none" />
             <div ref={terminalRef} className="h-full w-full" />
         </div>
     );

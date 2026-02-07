@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStore } from '../store/useStore';
-import { Shield } from 'lucide-react';
+import { Shield, Trophy, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const ProgressTracker = () => {
@@ -9,40 +9,41 @@ export const ProgressTracker = () => {
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="glass-morphism p-6 rounded-3xl border border-white/5 shadow-2xl overflow-hidden relative"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="glass-morphism"
+            style={{ padding: '30px', position: 'relative', overflow: 'hidden' }}
         >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 blur-3xl -mr-16 -mt-16 rounded-full" />
-
-            <div className="flex items-center justify-between mb-5 relative z-10">
-                <div className="flex items-center gap-4">
-                    <div className="p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl shadow-lg shadow-orange-500/20">
-                        <Shield className="text-white w-6 h-6" />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <div style={{ padding: '15px', background: 'linear-gradient(135deg, #FF9900, #FF6600)', borderRadius: '20px', boxShadow: '0 10px 30px rgba(255, 153, 0, 0.3)' }}>
+                        <Shield color="white" size={32} />
                     </div>
                     <div>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-0.5">Rango Actual</p>
-                        <p className="text-2xl font-black text-white tracking-tight">LEVEL {level}</p>
+                        <p style={{ fontSize: '10px', color: '#64748b', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '3px', marginBottom: '5px' }}>Rango Actual</p>
+                        <h3 style={{ fontSize: '36px', fontWeight: '900', color: 'white', letterSpacing: '-1.5px' }}>LVL {level}</h3>
                     </div>
                 </div>
-                <div className="text-right">
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-0.5">Exp Totales</p>
-                    <p className="text-2xl font-black text-orange-500 tracking-tight">{points.toLocaleString()} XP</p>
+                <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontSize: '10px', color: '#64748b', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '3px', marginBottom: '5px' }}>Puntuación</p>
+                    <h3 style={{ fontSize: '36px', fontWeight: '900', color: 'white', letterSpacing: '-1.5px' }}>{points}<span style={{ color: '#FF9900', fontSize: '20px', marginLeft: '5px' }}>XP</span></h3>
                 </div>
             </div>
 
-            <div className="relative h-4 w-full bg-slate-800/50 rounded-full p-1 border border-white/5 overflow-hidden">
-                <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progress}%` }}
-                    transition={{ duration: 1, ease: "easeOut" }}
-                    className="h-full bg-gradient-to-r from-orange-500 via-orange-400 to-yellow-400 rounded-full shadow-[0_0_12px_rgba(255,153,0,0.4)]"
-                />
-            </div>
-
-            <div className="flex justify-between mt-3 text-[10px] text-slate-400 font-bold uppercase tracking-[.2em]">
-                <span>Progreso de Nivel</span>
-                <span className="text-white">{Math.floor(progress)}%</span>
+            <div style={{ marginTop: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '980', color: '#94a3b8', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <TrendingUp size={14} color="#FF9900" /> PROGRESO NIVEL
+                    </span>
+                    <span style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>{Math.floor(progress)}%</span>
+                </div>
+                <div className="progress-bar-container">
+                    <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${progress}%` }}
+                        className="progress-bar-fill"
+                    />
+                </div>
             </div>
         </motion.div>
     );

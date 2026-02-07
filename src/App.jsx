@@ -1,13 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Terminal } from './components/Terminal';
 import { ChallengesPanel } from './components/ChallengesPanel';
 import { ProgressTracker } from './components/ProgressTracker';
 import { ManualModal } from './components/ManualModal';
-import { Cloud, Github, Layout, HelpCircle, Zap } from 'lucide-react';
+import { NotificationToast } from './components/NotificationToast';
+import { Cloud, Github, HelpCircle, Zap, LayoutDashboard, Terminal as TerminalIcon, Target } from 'lucide-react';
 import { motion } from 'framer-motion';
+import confetti from 'canvas-confetti';
+import { useStore } from './store/useStore';
+import { challenges } from './data/challenges';
 
 function App() {
     const [isManualOpen, setIsManualOpen] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    const { points, level, completedChallenges } = useStore();
 
     useEffect(() => {
         const hasSeenManual = localStorage.getItem('was_manual_seen');
@@ -17,72 +23,112 @@ function App() {
         }
     }, []);
 
-    return (
-        <div className="h-screen flex flex-col bg-[#020617] text-slate-100 overflow-hidden">
-            <ManualModal isOpen={isManualOpen} onClose={() => setIsManualOpen(false)} />
+    useEffect(() => {
+        if (level > 1) {
+            triggerConfetti();
+            addNotification('¡Subida de Nivel!', `Has alcanzado el Nivel ${level}`, 'achievement');
+        }
+    }, [level]);
 
-            {/* Navbar */}
-            <header className="h-20 border-b border-white/5 flex items-center justify-between px-10 bg-slate-950/20 backdrop-blur-xl sticky top-0 z-50">
-                <div className="flex items-center gap-4">
-                    <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-2.5 rounded-2xl shadow-lg shadow-orange-500/20">
-                        <Cloud className="text-white w-7 h-7" />
+    useEffect(() => {
+        if (completedChallenges.length > 0) {
+            addNotification('Reto Completado', `¡Buen trabajo! Has ganado puntos de experiencia.`, 'success');
+            triggerConfetti();
+        }
+    }, [completedChallenges.length]);
+
+    const triggerConfetti = () => {
+        confetti({
+            particleCount: 150,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#FF9900', '#232F3E', '#FFFFFF']
+        });
+    };
+
+    const addNotification = useCallback((title, message, type = 'info') => {
+        const id = Date.now();
+        setNotifications(prev => [...prev, { id, title, message, type }]);
+        setTimeout(() => {
+            setNotifications(prev => prev.filter(n => n.id !== id));
+        }, 4000);
+    }, []);
+
+    return (
+        <div className="app-container">
+            <ManualModal isOpen={isManualOpen} onClose={() => setIsManualOpen(false)} />
+            <NotificationToast notifications={notifications} />
+
+            {/* Header Premium con Clases de Respaldo */}
+            <header className="premium-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <div style={{ background: 'linear-gradient(to bottom right, #FF9900, #cc7a00)', padding: '12px', borderRadius: '16px' }}>
+                        <Cloud color="white" size={28} />
                     </div>
-                    <h1 className="text-2xl font-black tracking-tight tracking-tighter">
-                        AWS CLI <span className="text-orange-500">PLAYGROUND</span>
-                    </h1>
+                    <div>
+                        <h1 style={{ fontSize: '28px', fontWeight: '900', letterSpacing: '-1px' }}>
+                            AWS <span style={{ color: '#FF9900' }}>PLAYGROUND</span>
+                        </h1>
+                        <p style={{ fontSize: '10px', color: '#64748b', fontWeight: '800', letterSpacing: '4px', textTransform: 'uppercase' }}>Cloud Simulation Environment</p>
+                    </div>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                     <button
                         onClick={() => setIsManualOpen(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-full text-sm font-bold border border-white/5 transition-all text-slate-300 hover:text-white"
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px',
+                            background: 'rgba(255,255,255,0.05)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)',
+                            color: 'white', fontWeight: '800', fontSize: '11px'
+                        }}
                     >
-                        <HelpCircle className="w-4 h-4" />
-                        ¿Cómo Jugar?
+                        <HelpCircle size={16} /> ¿CÓMO JUGAR?
                     </button>
-                    <div className="w-px h-6 bg-white/10 mx-2" />
-                    <a href="#" className="p-2 bg-white/5 hover:bg-white/10 rounded-full border border-white/5 transition-all text-slate-300 hover:text-white">
-                        <Github className="w-5 h-5" />
-                    </a>
+                    <a href="#" style={{ color: '#94a3b8' }}><Github size={24} /></a>
                 </div>
             </header>
 
-            {/* Main Content */}
-            <main className="flex-1 flex overflow-hidden p-8 gap-8">
-                {/* Left Side: Terminal */}
-                <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="flex-1 flex flex-col gap-6"
-                >
-                    <div className="flex items-center justify-between px-2">
-                        <div className="flex items-center gap-3">
-                            <div className="flex gap-1.5 px-3 py-1.5 bg-white/5 rounded-full border border-white/5">
-                                <div className="w-2.5 h-2.5 rounded-full bg-red-500/80 animate-pulse" />
-                                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
-                                <div className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
+            {/* Main Layout con Clases Directas */}
+            <main className="main-layout">
+
+                {/* Lado Izquierdo: Consola */}
+                <section className="terminal-section">
+                    <div className="terminal-header">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(0,0,0,0.3)', padding: '8px 15px', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                                <TerminalIcon size={14} color="#FF9900" />
+                                <span style={{ fontSize: '10px', fontWeight: '900', color: '#cbd5e1', letterSpacing: '2px', textTransform: 'uppercase' }}>Interactive Shell</span>
                             </div>
-                            <span className="text-xs text-slate-500 font-black uppercase tracking-[.3em]">Console Instance: running</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-orange-500/80 text-xs font-black uppercase tracking-widest">
-                            <Zap className="w-4 h-4" />
-                            <span>Simulated Environment</span>
+                            <div className="badge-live">
+                                <div className="pulse-dot" /> LIVE
+                            </div>
                         </div>
                     </div>
-                    <Terminal />
-                </motion.div>
 
-                {/* Right Side: Challenges & Stats */}
-                <motion.aside
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="w-[400px] flex flex-col gap-8"
-                >
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                        <Terminal onCompleteAction={() => addNotification('Acción Exitosa', 'El comando se ha procesado correctamente.', 'success')} />
+                    </div>
+                </section>
+
+                {/* Lado Derecho: Sidebar */}
+                <aside className="sidebar-section">
                     <ProgressTracker />
-                    <div className="flex-1 glass-morphism rounded-3xl p-6 border border-white/5 overflow-hidden flex flex-col">
+
+                    <div className="card-challenges glass-morphism">
+                        <div className="card-header">
+                            <h2 style={{ fontSize: '20px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <Target color="#FF9900" size={24} /> RETOS
+                            </h2>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: '10px' }}>
+                                <p style={{ fontSize: '10px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Completa misiones para ganar XP</p>
+                                <span style={{ fontSize: '11px', fontWeight: '900', color: '#FF9900' }}>{completedChallenges.length}/{challenges.length}</span>
+                            </div>
+                        </div>
+
                         <ChallengesPanel />
                     </div>
-                </motion.aside>
+                </aside>
+
             </main>
         </div>
     );

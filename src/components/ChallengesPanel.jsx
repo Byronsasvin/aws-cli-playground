@@ -1,37 +1,55 @@
 import React from 'react';
 import { challenges } from '../data/challenges';
 import { useStore } from '../store/useStore';
-import { CheckCircle, Trophy } from 'lucide-react';
+import { CheckCircle, Zap } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export const ChallengesPanel = () => {
     const { completedChallenges } = useStore();
 
     return (
-        <div className="flex flex-col gap-4 overflow-y-auto max-h-[calc(100vh-250px)] pr-2">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-                <Trophy className="text-yellow-400" /> Challenges
-            </h2>
-            {challenges.map((ch) => (
-                <div
-                    key={ch.id}
-                    className={`p-4 rounded-lg border transition-all ${completedChallenges.includes(ch.id)
-                            ? 'bg-green-900/20 border-green-500/50'
-                            : 'bg-slate-800/50 border-slate-700 hover:border-slate-500'
-                        }`}
-                >
-                    <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-semibold">{ch.title}</h3>
-                        {completedChallenges.includes(ch.id) && <CheckCircle className="text-green-500 w-5 h-5" />}
-                    </div>
-                    <p className="text-xs text-slate-400 mb-3">{ch.description}</p>
-                    <div className="flex justify-between items-center text-xs">
-                        <span className="px-2 py-1 bg-slate-700 rounded text-slate-300 uppercase tracking-tighter">
-                            {ch.difficulty}
-                        </span>
-                        <span className="text-yellow-500 font-bold">+{ch.reward} pts</span>
-                    </div>
-                </div>
-            ))}
+        <div className="challenges-list">
+            {challenges.map((ch, index) => {
+                const isCompleted = completedChallenges.includes(ch.id);
+
+                return (
+                    <motion.div
+                        key={ch.id}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="challenge-item"
+                        style={isCompleted ? { borderColor: '#22c55e44', background: 'rgba(34, 197, 94, 0.05)' } : {}}
+                    >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{
+                                    fontSize: '9px', fontWeight: '900', textTransform: 'uppercase',
+                                    padding: '3px 8px', borderRadius: '6px',
+                                    background: ch.difficulty === 'beginner' ? 'rgba(56, 189, 248, 0.1)' : 'rgba(192, 132, 252, 0.1)',
+                                    color: ch.difficulty === 'beginner' ? '#38bdf8' : '#c084fc',
+                                    border: '1px solid transparent'
+                                }}>
+                                    {ch.difficulty}
+                                </span>
+                                <h4 style={{ fontSize: '14px', fontWeight: '800', color: 'white', textTransform: 'uppercase' }}>{ch.title}</h4>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#FF9900' }}>
+                                <Zap size={14} fill="#FF9900" />
+                                <span style={{ fontSize: '14px', fontWeight: '900' }}>+{ch.reward}</span>
+                            </div>
+                        </div>
+
+                        <p style={{ fontSize: '12px', color: '#94a3b8', lineHeight: '1.4', marginBottom: '15px' }}>{ch.description}</p>
+
+                        {isCompleted && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#22c55e', fontSize: '10px', fontWeight: '900' }}>
+                                <CheckCircle size={14} /> COMPLETADO
+                            </div>
+                        )}
+                    </motion.div>
+                );
+            })}
         </div>
     );
 };
